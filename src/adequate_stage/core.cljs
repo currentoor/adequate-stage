@@ -1,5 +1,8 @@
 (ns ^:figwheel-always adequate-stage.core
+    (:require-macros [adequate-stage.macros :refer [inspect]]
+                     [adequate-stage.material :as mui])
     (:require
+     ;[adequate-stage.storage :as store :refer [conn set-system-attrs! system-attr]]
      [secretary.core :as secretary :refer-macros [defroute]]
      [goog.events :as events]
      [goog.history.EventType :as EventType]
@@ -38,9 +41,8 @@
 
 (def color-theme {})
 
-(defc app-wrapper < color-theme []
-  ;(app conn)
-  [:h1 "hello world!"]
+(defc app-wrapper []
+  (mui/raised-button {:backgroundColor "#820000" :primary true :label "Wrong"})
   )
 
 (rum/mount (app-wrapper) (js/document.getElementById "app"))
