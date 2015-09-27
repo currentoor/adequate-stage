@@ -44,6 +44,7 @@
                   TableRow
                   TableRowColumn
                   TextField
+                  TimePicker
                   Toggle
                   ])
 

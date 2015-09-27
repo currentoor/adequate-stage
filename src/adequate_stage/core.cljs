@@ -2,18 +2,15 @@
     (:require-macros [adequate-stage.macros :refer [inspect]]
                      [adequate-stage.material :as mui])
     (:require
-     ;[adequate-stage.storage :as store :refer [conn set-system-attrs! system-attr]]
-     [secretary.core :as secretary :refer-macros [defroute]]
+     [adequate-stage.storage :as store :refer [conn set-system-attrs! system-attr]]
      [goog.events :as events]
      [goog.history.EventType :as EventType]
      [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]
+     [secretary.core :as secretary :refer-macros [defroute]]
      )
     (:import goog.History))
 
 (enable-console-print!)
-
-(defn set-system-attrs! [& params]
-  (println "todo set system attrs"))
 
 (defroute "/" []
   (set-system-attrs! :page :home))
@@ -42,7 +39,13 @@
 (def color-theme {})
 
 (defc app-wrapper []
-  (mui/raised-button {:backgroundColor "#820000" :primary true :label "Wrong"})
+  [:div.pure-g
+   [:div.pure-u-1-3
+    (mui/raised-button {:backgroundColor "#820000" :primary true :label "Wrong"})]
+   [:div.pure-u-1-3
+    (mui/text-field {:hintText "Take a hint!"
+                     :floatingLabelText "down here we all float..."
+                     :multiLine true})]]
   )
 
 (rum/mount (app-wrapper) (js/document.getElementById "app"))

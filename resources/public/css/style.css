@@ -1,2 +1,9 @@
-/* some style */
+html, body, button, input, select, textarea,
+.pure-g [class *= "pure-u"] {
+    /* Set your content font stack here: */
+    font-family: 'Roboto', sans-serif;
+}
+
+.col { background: #ccc; }
+.center { text-align: center; }
 
