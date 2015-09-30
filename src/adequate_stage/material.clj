@@ -17,6 +17,7 @@
                   Dialog
                   DropDownMenu
                   FlatButton
+                  FontIcon
                   IconButton
                   IconMenu
                   LeftNav
@@ -46,6 +47,10 @@
                   TextField
                   TimePicker
                   Toggle
+                  Toolbar
+                  ToolbarGroup
+                  ToolbarSeparator
+                  ToolbarTitle
                   ])
 
 (defn conditional-compile [children]

@@ -5,6 +5,9 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [
+                 [cljsjs/fixed-data-table "0.4.1-0" :exclusions [cljsjs/react]]
+                 [cljsjs/selectize "0.12.1-1"]
+                 [com.taoensso/sente "1.6.0"]
                  [datascript "0.13.1"]
                  [org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.122"]
