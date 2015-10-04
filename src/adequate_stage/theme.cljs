@@ -8,9 +8,9 @@
                                    :primary2Color (.-teal400 colors)
                                    :primary3Color (.-teal900 colors)
 
-                                   :accent1Color (.-teal800 colors)
-                                   :accent2Color (.-teal700 colors)
-                                   :accent3Color (.-teal900 colors)
+                                   :accent1Color "#2C3E50";(.-teal800 colors)
+                                   :accent2Color "#40C4C0";(.-teal700 colors)
+                                   :accent3Color "#18252D";(.-teal900 colors)
 
                                    :textColor (.-darkBlack colors)
                                    :canvasColor (.-white colors)
