@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [
+                 [com.taoensso/sente "1.6.0"]
                  [cljsjs/fixed-data-table "0.4.1-0" :exclusions [cljsjs/react]]
                  [cljsjs/selectize "0.12.1-1"]
                  [com.taoensso/sente "1.6.0"]

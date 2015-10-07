@@ -57,22 +57,13 @@
   (if (seq children)
     `(sablono.core/html ~@children)))
 
-(defmacro grid [& args]
-  (let [[opts# & [children#]] (if (-> args first map?)
-                                [(first args) (rest args)]
-                                [nil args])]
-    `(js/React.createElement
-      js/window.ReactGridLayout
-      (cljs.core/clj->js ~opts#)
-      ~(conditional-compile children#))))
-
 (defn gen-wrapper [component]
   `(defmacro ~(symbol (->kebab (str component))) [& args#]
      (let [[opts# & [children#]] (if (-> args# first map?)
                                    [(first args#) (rest args#)]
                                    [nil args#])]
        `(js/React.createElement
-         ~(symbol "js" (str "window.MaterialUI." (name '~component)))
+         ~(symbol "js" (str "MaterialUI." (name '~component)))
          (cljs.core/clj->js ~opts#)
          ~(conditional-compile children#)))))
 

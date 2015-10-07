@@ -4,7 +4,7 @@
       theme-manager  js/window.MaterialUI.Styles.ThemeManager
       app-theme #js {:spacing js/window.MaterialUI.Styles.Spacing
                      :fontFamily "Roboto, sans-serif"
-                     :palette #js {:primary1Color (.-cyan900 colors)
+                     :palette #js {:primary1Color (.-teal900 colors)
                                    :primary2Color (.-teal400 colors)
                                    :primary3Color (.-teal900 colors)
 
