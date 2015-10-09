@@ -61,7 +61,7 @@
 
 (defcs filter-dropdown [state]
   (let [menuItems (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
-    (mui/drop-down-menu {:menuItems menuItems})))
+    (mui/drop-down-menu {:style {:width "200px" } :menuItems menuItems})))
 
 (def paging-sizes [10 25 50 100])
 
@@ -77,13 +77,16 @@
   (let [page-number (or (system-attr db :page-number) 1)
         page-size (or (system-attr db :page-size) 50)]
     [:div
-      [:div.col.span_1_of_4
-       "GO TO PAGE:"
-       (mui/text-field {:style        {:width "50px"}
+      [:div.col {:style {:margin-right "10px"}}
+       [:div {:style {:display "inline" :position "relative" :top "5px" :margin-right "10px"}}
+        "GO TO PAGE:"]
+       (mui/text-field {:style        {:width "35px"}
                         :defaultValue page-number})
        ]
-      [:div.col.span_1_of_4
-       "NUMBER OF ROWS:" (paging-dropdown page-size)]
+      [:div.col
+       [:div {:style {:display "inline" :position "relative" :bottom "10px"}}
+        "NUMBER OF ROWS:"]
+       (paging-dropdown page-size)]
       [:div.col
        (mui/icon-button
         {:iconClassName   "material-icons"
@@ -92,7 +95,7 @@
          ;:onClick         prev
          }
         "arrow_back")
-       "1-10 of 10"
+       [:div {:style {:position "relative" :bottom "5px" :display "inline" }} "1-10 of 10"]
        (mui/icon-button
         {:iconClassName   "material-icons"
          :tooltipPosition "top-right"
@@ -110,64 +113,64 @@
      [:h1 "Welcome to AdequateStage!"]
 
      [:div.section.group
-      [:div.col.span_1_of_3
-       (mui/text-field {:hintText          "Ex: Campaign Name"
-                        :floatingLabelText "Search"})]
-      [:div.col.span_1_of_3
-       [:div.col.span_1_of_3
-        (mui/raised-button
-         {:label "Columns"
-          :onClick #(.show (.. this -refs -selectColumnsModal))})
+      [:div.col.span_1_of_12]
+        [:div.col.span_10_of_12
+         [:div.section.group
+          [:div.col.span_1_of_4]
+          [:div.col.span_2_of_4
+            [:div.col.span_1_of_2
+              (mui/date-picker
+               {:hintText "Start"
+                :showYearSelector true})]
+             [:div.col.span_1_of_2
+              (mui/date-picker
+               {:hintText "End"})]]]
+
+         [:div.section.group
+          [:div.col.span_1_of_5
+            (filter-dropdown)]
+          [:div.col.span_1_of_5
+           (mui/text-field {:hintText          "Ex: Campaign Name"
+                            :floatingLabelText "Search"
+                            :style {:width "200px" :position "relative" :bottom "13px"} })]
+          [:div.col.span_1_of_5]
+
+          [:div.col.span_1_of_6 {:style {:float "right"} }
+            (mui/raised-button
+             {:label "Columns"
+              :onClick #(.show (.. this -refs -selectColumnsModal))
+              :style {:float "right"} })
 
 
-        (mui/dialog {:title   "Selected Columns"
-                     :actions [{:text "cancel"}
-                               {:text       "submit"
-                                :onTouchTap #(inspect 'todo)}]
-                     :ref     "selectColumnsModal"}
-                    [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
-                    [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
-                    [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
-                    )
-        ]
-       [:div.col.span_1_of_3
-        (mui/drop-down-menu {:menuItems [{:payload 1 :text "foo"}]})
-        ]]]
+            (mui/dialog {:title   "Selected Columns"
+                         :actions [{:text "cancel"}
+                                   {:text       "submit"
+                                    :onTouchTap #(inspect 'todo)}]
+                         :ref     "selectColumnsModal"}
+                        [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
+                        [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
+                        [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
+                        )
+           ]
 
-     [:div.section.group
-      [:div.col.span_1_of_3
-       (filter-dropdown state)]
-      [:div.col.span_1_of_3
-       [:div.col.span_1_of_3
-        (mui/date-picker
-         {:hintText "Start"
-          :showYearSelector true})]
-       [:div.col.span_1_of_3
-        (mui/date-picker
-         {:hintText "End"})]]]
+          [:div.col.span_1_of_5 {:style {:float "right"} }
+            (mui/drop-down-menu {:menuItems [{:payload 1 :text "foo"}]
+                                 :style {:width "200px" }})
+            ]
+           ]
 
 
-     [:div.col.span_1_of_3
-      ]
+         [:div.section.group
+           (metrics-table metrics-data)
+          [:div.col.span_1_of_10]]
 
-     [:div.section.group
-      [:div.col.span_1_of_1
-       ]
-      ]
-
-     [:div.section.group
-      [:div.col.span_1_of_10]
-      [:div.col.span_8_of_10
-       (metrics-table metrics-data)
-       ]
-      [:div.col.span_1_of_10]]
-
-     [:div.section.group
-      [:div.col.span_2_of_5]
-      [:div.col.span_3_of_5
-       (paging db)
-       ]
-      ]
-     ])
+         [:div.section.group
+          [:div.col.span_2_of_5]
+          [:div.col.span_3_of_5
+           (paging db)
+           ]
+          ]
+         ]]]
+    )
   )
 
