@@ -16,7 +16,6 @@
   {:values ["all_visible" "all_active" "all_with_deleted" "all_inactive"]
    :texts ["All But Deleted" "All Active" "All" "Paused/Completed"]})
 
-
 (def table-row-column js/window.MaterialUI.TableRowColumn)
 
 (defn data->table-row [row]
@@ -40,10 +39,10 @@
 
 (defcs metrics-table < (rum/local nil) [state data]
   (let [rows* (map data->table-row (:rows data))
-        rows (->> rows* (repeat 5) flatten)]
+        rows (->> rows* (repeat 15) flatten)]
     (time (mui/table
       {:fixedHeader     false
-       :height          "270px"
+       :height          "570px"
        :fixedFooter     true
        :footerDataGetter #(["14" "15124" "12514" "12414" "1241"])
        :multiSelectable true}
@@ -57,6 +56,7 @@
        rows)
        (js/React.createElement
         js/window.MaterialUI.TableFooter
+        nil
         (data->table-row ["123" "121242" "124" "1242"])     )))))
 
 (defcs filter-dropdown [state]
@@ -68,59 +68,106 @@
 (defcs paging-dropdown [state page-size]
   (let [menuItems (mapv (fn [v1] {:payload v1 :text v1}) paging-sizes)
         selectedIndex (.indexOf (to-array paging-sizes) page-size)]
-    (mui/drop-down-menu {:style {:width "90px" } :selectedIndex selectedIndex :autoWidth false :menuItems menuItems})))
+    (mui/drop-down-menu {:style         {:width "90px" }
+                         :selectedIndex selectedIndex
+                         :autoWidth     false
+                         :menuItems     menuItems})))
 
 (defcs paging [state db]
   (let [page-number (or (system-attr db :page-number) 1)
         page-size (or (system-attr db :page-size) 50)]
     [:div
       [:div.col.span_1_of_4
-        "GO TO PAGE:" [:input.paging-input {:value page-number}]]
+       "GO TO PAGE:"
+       (mui/text-field {:style        {:width "50px"}
+                        :defaultValue page-number})
+       ]
       [:div.col.span_1_of_4
        "NUMBER OF ROWS:" (paging-dropdown page-size)]
       [:div.col
-       [:button.paging-button "<"]
+       (mui/icon-button
+        {:iconClassName   "material-icons"
+         :tooltipPosition "top-right"
+         :tooltip         "Previous Page"
+         ;:onClick         prev
+         }
+        "arrow_back")
        "1-10 of 10"
-       [:button.paging-button ">"]]
+       (mui/icon-button
+        {:iconClassName   "material-icons"
+         :tooltipPosition "top-right"
+         :tooltip         "Previous Page"
+         ;;:onClick         prev
+         }
+        "arrow_forward")
+       ]
      ])
 )
 
 (defcs global-dash [state db]
-  [:div
-   [:h1 "Welcome to AdequateStage!"]
+  (let [this (:rum/react-component state)]
+    [:div
+     [:h1 "Welcome to AdequateStage!"]
 
-   [:div.section.group
-    [:div.col.span_1_of_3
-      (filter-dropdown state)]
-     [:div.col.span_1_of_3
-    [:div.col.span_1_of_3
-     (mui/date-picker
-      {:hintText "Start"
-       :showYearSelector true})]
-    [:div.col.span_1_of_3
-     (mui/date-picker
-      {:hintText "End"})]]]
-     [:div.col.span_1_of_3
+     [:div.section.group
+      [:div.col.span_1_of_3
+       (mui/text-field {:hintText          "Ex: Campaign Name"
+                        :floatingLabelText "Search"})]
+      [:div.col.span_1_of_3
+       [:div.col.span_1_of_3
+        (mui/raised-button
+         {:label "Columns"
+          :onClick #(.show (.. this -refs -selectColumnsModal))})
+
+
+        (mui/dialog {:title   "Selected Columns"
+                     :actions [{:text "cancel"}
+                               {:text       "submit"
+                                :onTouchTap #(inspect 'todo)}]
+                     :ref     "selectColumnsModal"}
+                    [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
+                    [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
+                    [:div (mui/toggle {:name "Col1" :value 1 :label "foo"})]
+                    )
         ]
+       [:div.col.span_1_of_3
+        (mui/drop-down-menu {:menuItems [{:payload 1 :text "foo"}]})
+        ]]]
 
-   [:div.section.group
-    [:div.col.span_1_of_1
-     ]
-    ]
+     [:div.section.group
+      [:div.col.span_1_of_3
+       (filter-dropdown state)]
+      [:div.col.span_1_of_3
+       [:div.col.span_1_of_3
+        (mui/date-picker
+         {:hintText "Start"
+          :showYearSelector true})]
+       [:div.col.span_1_of_3
+        (mui/date-picker
+         {:hintText "End"})]]]
 
-   [:div.section.group
-    [:div.col.span_1_of_10]
-    [:div.col.span_8_of_10
-     (metrics-table metrics-data)
-     ]
-    [:div.col.span_1_of_10]]
 
-    [:div.section.group
-     [:div.col.span_2_of_5]
-     [:div.col.span_3_of_5
-      (paging db)
-     ]
-    ]
-   ]
+     [:div.col.span_1_of_3
+      ]
+
+     [:div.section.group
+      [:div.col.span_1_of_1
+       ]
+      ]
+
+     [:div.section.group
+      [:div.col.span_1_of_10]
+      [:div.col.span_8_of_10
+       (metrics-table metrics-data)
+       ]
+      [:div.col.span_1_of_10]]
+
+     [:div.section.group
+      [:div.col.span_2_of_5]
+      [:div.col.span_3_of_5
+       (paging db)
+       ]
+      ]
+     ])
   )
 

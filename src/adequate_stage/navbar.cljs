@@ -37,7 +37,7 @@
                     (aset js/window.location "href" (.-route menu-item)))})
      (mui/dialog {:title   "Creation"
                   :actions [{:text "cancel"}
-                            {:text      "submit"
+                            {:text       "submit"
                              :onTouchTap #(inspect 'todo)}]
                   :ref     "creationModal"}
                  (mui/radio-button-group
