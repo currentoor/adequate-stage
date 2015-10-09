@@ -6,3 +6,11 @@ html, body, button, input, select, textarea,
 
 .center { text-align: center; }
 
+.paging-input { width: 20px; }
+
+.paging-button {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+

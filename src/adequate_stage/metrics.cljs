@@ -27,7 +27,7 @@
   (clj->js (rows row-index))
   )
 
-(inspect (clj->js (repeat 20 [1 2 3])))
+;(inspect (clj->js (repeat 20 [1 2 3])))
 
 (defcs metrics-table [state]
   [:div
