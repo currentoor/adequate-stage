@@ -8,6 +8,7 @@
                  [cljsjs/fixed-data-table "0.4.1-0" :exclusions [cljsjs/react]]
                  [cljsjs/selectize "0.12.1-1"]
                  [cljs-ajax "0.5.0"]
+                 [com.cognitect/transit-cljs "0.8.137"]
                  [datascript "0.13.1"]
                  [org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.122"]

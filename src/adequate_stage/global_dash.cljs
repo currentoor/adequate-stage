@@ -6,25 +6,96 @@
   (:require
    [adequate-stage.storage :as store :refer [conn set-system-attrs! system-attr]]
    [adequate-stage.metrics :as met]
+   [ajax.core :refer [GET POST]]
    [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]))
 
-(def columns ["status" "x" "campaign" "network" "account"])
-(def rows [["Active" "x" "Foo" "Twitter" "Kabir"]])
+;; (let [query           "collections/karantoor.accounts.facebook.100540310128849.campaigns,karantoor.accounts.facebook.473126772864672.campaigns,karantoor.accounts.linkedin.228929389.campaigns,karantoor.accounts.linkedin.502260647.campaigns,karantoor.accounts.linkedin.502260795.campaigns,karantoor.accounts.linkedin.502307123.campaigns,karantoor.accounts.linkedin.502365931.campaigns,karantoor.accounts.linkedin.500043833.campaigns,karantoor.accounts.linkedin.500082547.campaigns,karantoor.accounts.twitter.18ce53z7hjq.campaigns,karantoor.accounts.twitter.18ce53y6or0.campaigns,karantoor.accounts.twitter.18ce53waavf.campaigns/summary/2015-10-05..2015-10-11?&limit=10&group_limit=5&cljs=true&offset=0&sort_by=clicks&order=desc&filters=%5B%7B%22op%22%3A%22iin%22%2C%22path%22%3A%22meta%2Fstatus%22%2C%22value%22%3A%5B%22active%22%2C%22ad_group_inactive%22%2C%22campaign_inactive%22%2C%22completed%22%2C%22empty%22%2C%22inactive%22%2C%22not_empty%22%5D%7D%5D
+;; "
 
-(def col1 {"Campaign Name" {"data" ["123" "456"]
-                            "totals" []}})
-(def col2 {"status" {"data" ["active" "deleted"]
-                     "totals" []}})
+;;       staging-uri     "https://adstage-staging-metrics-v3.herokuapp.com:443/"
+;;       dev-uri         "http://localhost:5002/"
+;;       staging-headers {"Authorization" "Basic bWV0cmljczptZXRyaWNzLnBhc3N3b3Jk"}
+;;       dev-headers     {"Authorization" "Basic YWQ6c3RhZ2U="}]
+;;   (GET (str dev-uri query)
+;;        {:headers dev-headers
+;;         :handler #(inspect (and (set-system-attrs! :totals (:totals %))
+;;                                 (set-system-attrs! :rows (:rows %))
+;;                                 (set-system-attrs! :visible-cols nil)
+;;                                 ))
+;;         }))
 
-(def metrics-data {"Campaign Name" {"data" ["123" "456"] "totals" []}
-                   "Status" {"data" ["active" "deleted"] "totals" []}
-                   "foo" {"data" ["foo" "foo"] "totals" []}
-                   })
+(def keys->name {:social_percentage      "Social"
+                 :account_currency_code  "Currency"
+                 :campaign_name          "Campaign"
+                 :account_uri            "URI"
+                 :impressions            "Impressions"
+                 :cpr                    "CPR"
+                 :folder_name            "Folder"
+                 :clicks                 "Clicks"
+                 :name                   "Name"
+                 :spend                  "Spend"
+                 :account_status         "Status"
+                 :frequency              "Frequency"
+                 :type                   "Type"
+                 :campaign_type          "Campaign Type"
+                 :campaign_uri           "Campaign URI"
+                 :campaign_is_draft      "Draft"
+                 :folder_id              "Folder ID"
+                 :full_remote_account_id "Remote ID"
+                 :field_mappings         "Mappings"
+                 :status                 "Status"
+                 :campaign_status        "Campaign Status"
+                 :conversions            "Conversions"
+                 :remote_campaign_id     "Campaign Id"
+                 :conversion_rate        "Conversion"
+                 :account_time_zone      "Time Zone"
+                 :network                "Network"
+                 :account_name           "Account"
+                 :cpm                    "CPM"
+                 :cpa                    "CPA"
+                 :cpc                    "CPC"
+                 :remote_account_id      "Account ID"
+                 :ctr                    "CTR"
+                 :currency_code          "Currency Code"
+                 :results                "Result"})
 
-(defn get-rows [] (->> (vals metrics-data)
-              (map #(get % "data"))
-              (apply map vector)
-              ))
+(defn allowed-columns []
+  (or
+   (system-attr @conn :allowed-columns)
+   #{:account_currency_code
+     :cpr
+     :name
+     :spend
+     :network
+     :cpm
+     :cpa
+     ;; :cpc
+     ;; :ctr
+     }))
+
+(defn in?
+  "true if seq contains elm"
+  [seq elm]
+  (some #(= elm %) seq))
+
+(defn filter-by-allowed [maps]
+  (->> maps
+       (filter (fn [[k _]]
+                 (in? (allowed-columns) k)))
+       (map (fn [[_ n]] n))))
+
+(defn column-names []
+  (->> keys->name
+       filter-by-allowed))
+
+(defn all-rows []
+  (->> (system-attr @conn :rows)
+       (map filter-by-allowed)
+       (map vec)))
+
+(defn all-totals []
+  (->> (system-attr @conn :totals)
+       filter-by-allowed))
 
 (def filters
   {:values ["all_visible" "all_active" "all_with_deleted" "all_inactive"]
@@ -50,17 +121,15 @@
          (map clojure.string/upper-case)
          (map #(js/React.createElement table-header-column nil %))))))
 
-(inspect (get-rows))
-
 (defcs metrics-table < (rum/local nil) [state data]
-  (let [rows* (map data->table-row (get-rows))
-        rows rows*]
+  (let [rows* (map data->table-row (all-rows))
+        rows (take 4 rows*)]
     (time (mui/table
       {:fixedHeader     true
        :height          "570px"
        :fixedFooter     true
        :multiSelectable true}
-      (data->table-header (keys data))
+      (data->table-header (column-names))
       (js/React.createElement
        js/window.MaterialUI.TableBody
        #js {:deselectOnClickAway false
@@ -71,7 +140,7 @@
        (js/React.createElement
         js/window.MaterialUI.TableFooter
         nil
-        (data->table-row ["123" "121242" "124" "1242" "12e13"])     )))))
+        (data->table-row (all-totals)))))))
 
 (defcs filter-dropdown [state]
   (let [menuItems (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
@@ -177,7 +246,7 @@
 
 
          [:div.section.group
-           (metrics-table metrics-data)
+           (metrics-table nil)
           [:div.col.span_1_of_10]]
 
          [:div.section.group
