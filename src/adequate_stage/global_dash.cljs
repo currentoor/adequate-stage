@@ -21,10 +21,7 @@
                    "foo" {"data" ["foo" "foo"] "totals" []}
                    })
 
-; ["123" "active"]
-; ["456" "deleted"]
-
-(inspect (->> (vals metrics-data)
+(defn get-rows [] (->> (vals metrics-data)
               (map #(get % "data"))
               (apply map vector)
               ))
@@ -53,9 +50,11 @@
          (map clojure.string/upper-case)
          (map #(js/React.createElement table-header-column nil %))))))
 
+(inspect (get-rows))
+
 (defcs metrics-table < (rum/local nil) [state data]
-  (let [rows* (map data->table-row (:rows data))
-        rows (->> rows* (repeat 15) flatten)]
+  (let [rows* (map data->table-row (get-rows))
+        rows rows*]
     (time (mui/table
       {:fixedHeader     true
        :height          "570px"
@@ -76,14 +75,14 @@
 
 (defcs filter-dropdown [state]
   (let [menuItems (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
-    (mui/drop-down-menu {:style {:width "200px" } :menuItems menuItems})))
+    (mui/drop-down-menu {:style {:width "100%" } :menuItems menuItems})))
 
 (def paging-sizes [10 25 50 100])
 
 (defcs paging-dropdown [state page-size]
   (let [menuItems (mapv (fn [v1] {:payload v1 :text v1}) paging-sizes)
         selectedIndex (.indexOf (to-array paging-sizes) page-size)]
-    (mui/drop-down-menu {:style         {:width "90px" }
+    (mui/drop-down-menu {:style         {:width "100%" }
                          :selectedIndex selectedIndex
                          :autoWidth     false
                          :menuItems     menuItems})))
@@ -137,11 +136,11 @@
               (mui/date-picker
                {:hintText "Start"
                 :showYearSelector true
-                :textFieldStyle {:width "120px"}})]
+                :textFieldStyle {:width "100%"}})]
              [:div.col.span_1_of_2
               (mui/date-picker
                {:hintText "End"
-                :textFieldStyle {:width "120px"}})]]]
+                :textFieldStyle {:width "100%"}})]]]
 
          [:div.section.group
           [:div.col.span_1_of_5
@@ -149,14 +148,14 @@
           [:div.col.span_1_of_5
            (mui/text-field {:hintText          "Ex: Campaign Name"
                             :floatingLabelText "Search"
-                            :style {:width "200px" :position "relative" :bottom "17px"} })]
+                            :style {:width "100%" :position "relative" :bottom "17px"} })]
           [:div.col.span_1_of_5]
 
           [:div.col.span_1_of_8 {:style {:position "relative" :top "10px" :float "right"} }
             (mui/raised-button
              {:label "Columns"
               :onClick #(.show (.. this -refs -selectColumnsModal))
-              :style {:float "right"} })
+              :style {:width "100%" :float "right"} })
 
 
             (mui/dialog {:title   "Selected Columns"
@@ -172,7 +171,7 @@
 
           [:div.col.span_1_of_5 {:style {:float "right"} }
             (mui/drop-down-menu {:menuItems [{:payload 1 :text "foo"}]
-                                 :style {:width "200px" }})
+                                 :style {:width "100%" }})
             ]
            ]
 

@@ -13,7 +13,7 @@
      [adequate-stage.twitter-dash :refer [twitter-dash]]
      [ajax.core :refer [GET POST]]
      [cljs.core.async :as async :refer (<! >! put! chan)]
-     [taoensso.sente  :as sente :refer (cb-success?)]
+;     [taoensso.sente  :as sente :refer (cb-success?)]
      cljsjs.fixed-data-table
      [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]))
 
