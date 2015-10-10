@@ -8,9 +8,16 @@
    [adequate-stage.metrics :as met]
    [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]))
 
-(def metrics-data
-  {:columns ["status" "x" "campaign" "network" "account"]
-   :rows [["Active" "x" "Foo" "Twitter" "Kabir"]]})
+(def columns ["status" "x" "campaign" "network" "account"])
+(def rows [["Active" "x" "Foo" "Twitter" "Kabir"]])
+
+(def col1 {"Campaign Name" {"data" ["123" "456"]
+                            "totals" []}})
+(def col2 {"status" {"data" ["active" "deleted"]
+                     "totals" []}})
+
+(def metrics-data {"Campaign Name" {"data" ["123" "456"] "totals" []}
+                   "Status" {"data" ["active" "deleted"] "totals" []}})
 
 (def filters
   {:values ["all_visible" "all_active" "all_with_deleted" "all_inactive"]
@@ -27,7 +34,7 @@
 
 (def table-header-column js/window.MaterialUI.TableHeaderColumn)
 
-(defn data->table-header [{columns :columns}]
+(defn data->table-header [columns]
   (mui/table-header
    (js/React.createElement
     js/window.MaterialUI.TableRow
@@ -36,17 +43,17 @@
          (map clojure.string/upper-case)
          (map #(js/React.createElement table-header-column nil %))))))
 
+(inspect (mapv (fn [{data "data"}] (get data 0)) (vals metrics-data)))
 
 (defcs metrics-table < (rum/local nil) [state data]
   (let [rows* (map data->table-row (:rows data))
         rows (->> rows* (repeat 15) flatten)]
     (time (mui/table
-      {:fixedHeader     false
+      {:fixedHeader     true
        :height          "570px"
        :fixedFooter     true
-       :footerDataGetter #(["14" "15124" "12514" "12414" "1241"])
        :multiSelectable true}
-      (data->table-header data)
+      (data->table-header (keys data))
       (js/React.createElement
        js/window.MaterialUI.TableBody
        #js {:deselectOnClickAway false
@@ -57,7 +64,7 @@
        (js/React.createElement
         js/window.MaterialUI.TableFooter
         nil
-        (data->table-row ["123" "121242" "124" "1242"])     )))))
+        (data->table-row ["123" "121242" "124" "1242" "12e13"])     )))))
 
 (defcs filter-dropdown [state]
   (let [menuItems (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
@@ -116,15 +123,17 @@
       [:div.col.span_1_of_12]
         [:div.col.span_10_of_12
          [:div.section.group
-          [:div.col.span_1_of_4]
-          [:div.col.span_2_of_4
+          [:div.col.span_1_of_3]
+          [:div.col.span_1_of_3
             [:div.col.span_1_of_2
               (mui/date-picker
                {:hintText "Start"
-                :showYearSelector true})]
+                :showYearSelector true
+                :textFieldStyle {:width "120px"}})]
              [:div.col.span_1_of_2
               (mui/date-picker
-               {:hintText "End"})]]]
+               {:hintText "End"
+                :textFieldStyle {:width "120px"}})]]]
 
          [:div.section.group
           [:div.col.span_1_of_5
@@ -132,10 +141,10 @@
           [:div.col.span_1_of_5
            (mui/text-field {:hintText          "Ex: Campaign Name"
                             :floatingLabelText "Search"
-                            :style {:width "200px" :position "relative" :bottom "13px"} })]
+                            :style {:width "200px" :position "relative" :bottom "17px"} })]
           [:div.col.span_1_of_5]
 
-          [:div.col.span_1_of_6 {:style {:float "right"} }
+          [:div.col.span_1_of_8 {:style {:position "relative" :top "10px" :float "right"} }
             (mui/raised-button
              {:label "Columns"
               :onClick #(.show (.. this -refs -selectColumnsModal))
