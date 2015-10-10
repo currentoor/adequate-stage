@@ -17,7 +17,17 @@
                      "totals" []}})
 
 (def metrics-data {"Campaign Name" {"data" ["123" "456"] "totals" []}
-                   "Status" {"data" ["active" "deleted"] "totals" []}})
+                   "Status" {"data" ["active" "deleted"] "totals" []}
+                   "foo" {"data" ["foo" "foo"] "totals" []}
+                   })
+
+; ["123" "active"]
+; ["456" "deleted"]
+
+(inspect (->> (vals metrics-data)
+              (map #(get % "data"))
+              (apply map vector)
+              ))
 
 (def filters
   {:values ["all_visible" "all_active" "all_with_deleted" "all_inactive"]
@@ -42,8 +52,6 @@
     (->> columns
          (map clojure.string/upper-case)
          (map #(js/React.createElement table-header-column nil %))))))
-
-(inspect (mapv (fn [{data "data"}] (get data 0)) (vals metrics-data)))
 
 (defcs metrics-table < (rum/local nil) [state data]
   (let [rows* (map data->table-row (:rows data))
