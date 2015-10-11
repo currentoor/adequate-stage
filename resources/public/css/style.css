@@ -4,6 +4,10 @@ html, body, button, input, select, textarea,
     font-family: 'Roboto', sans-serif;
 }
 
+html {
+    overflow-y: scroll; 
+}
+
 .center { text-align: center; }
 
 .paging-input { width: 20px; }
