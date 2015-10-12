@@ -192,10 +192,15 @@
 (defcs sort-by-dropdown [state]
   (let [sub-map    (select-keys keys->name (into [] (allowed-columns)))
         menu-items (mapv (fn [[k v]] {:payload k :text v}) sub-map)]
-    (mui/drop-down-menu {:style {:width "100%" }
-                         :onChange #(and (set-system-attrs! :sort-by (.-payload %3))
-                                         (fetch-data))
-                         :menuItems menu-items})))
+    [:div
+     [:div {:style {:font-size "12px" :position "relative" :left "20px" :font-weight "bold"}}
+      "Sort By"]
+      (mui/drop-down-menu {:style {:width "100%" }
+                           :onChange #(and (set-system-attrs! :sort-by (.-payload %3))
+                                           (fetch-data))
+                           :menuItems menu-items})
+    ]
+  ))
 
 (def paging-sizes [30 50 100 500 1000])
 
