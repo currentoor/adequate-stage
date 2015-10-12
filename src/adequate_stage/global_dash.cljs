@@ -214,17 +214,18 @@
   (let [page-number (or (system-attr db :page-number) 1)
         page-size (or (system-attr db :limit) 50)]
     [:div {:style {:font-size "12px"}}
-      [:div.col {:style {:margin-right "15px"}}
+      [:div.col.span_1_of_3 {}
        [:div {:style {:display "inline" :position "relative" :top "5px" :margin-right "10px"}}
         "GO TO PAGE:"]
        (mui/text-field {:style        {:width "35px" :position "relative" :top "3px"}
                         :defaultValue page-number})
        ]
-      [:div.col
-       [:div {:style {:display "inline" :position "relative" :bottom "15px"}}
+      [:div.col.span_1_of_3
+       [:div.col.span_3_of_5 {:style {:display "inline" :position "relative" :top "17px"}}
         "NUMBER OF ROWS:"]
-       (paging-dropdown page-size)]
-      [:div.col
+       [:div.col.span_2_of_6
+         (paging-dropdown page-size)]]
+      [:div.col.span_1_of_3
        (mui/icon-button
         {:iconClassName   "material-icons"
          :tooltipPosition "top-right"
@@ -339,8 +340,8 @@
           [:div.col.span_1_of_10]]
 
          [:div.section.group
-          [:div.col.span_1_of_4]
-          [:div.col.span_1_of_2
+          [:div.col.span_1_of_5]
+          [:div.col.span_3_of_5
            (paging db)
            ]
           ]
