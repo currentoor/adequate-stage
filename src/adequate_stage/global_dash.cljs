@@ -1,28 +1,37 @@
 (ns adequate-stage.global-dash
   (:require-macros [adequate-stage.macros :refer [inspect]]
-                   [adequate-stage.material :as mui]
-                   )
-
+                   [adequate-stage.material :as mui])
   (:require
    [adequate-stage.storage :as store :refer [conn set-system-attrs! system-attr]]
    [adequate-stage.metrics :as met]
    [ajax.core :refer [GET POST]]
    [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]))
 
-(defonce load-data
-  (let [query           "collections/karantoor.accounts.facebook.100540310128849.campaigns,karantoor.accounts.facebook.473126772864672.campaigns,karantoor.accounts.linkedin.228929389.campaigns,karantoor.accounts.linkedin.502260647.campaigns,karantoor.accounts.linkedin.502260795.campaigns,karantoor.accounts.linkedin.502307123.campaigns,karantoor.accounts.linkedin.502365931.campaigns,karantoor.accounts.linkedin.500043833.campaigns,karantoor.accounts.linkedin.500082547.campaigns,karantoor.accounts.twitter.18ce53z7hjq.campaigns,karantoor.accounts.twitter.18ce53y6or0.campaigns,karantoor.accounts.twitter.18ce53waavf.campaigns/summary/2015-10-05..2015-10-11?&limit=30&group_limit=5&cljs=true&offset=0&sort_by=clicks&order=desc&filters=%5B%7B%22op%22%3A%22iin%22%2C%22path%22%3A%22meta%2Fstatus%22%2C%22value%22%3A%5B%22active%22%2C%22ad_group_inactive%22%2C%22campaign_inactive%22%2C%22completed%22%2C%22empty%22%2C%22inactive%22%2C%22not_empty%22%5D%7D%5D
-"
+(def query-prefix "collections/karantoor.accounts.facebook.100540310128849.campaigns,karantoor.accounts.facebook.473126772864672.campaigns,karantoor.accounts.linkedin.228929389.campaigns,karantoor.accounts.linkedin.502260647.campaigns,karantoor.accounts.linkedin.502260795.campaigns,karantoor.accounts.linkedin.502307123.campaigns,karantoor.accounts.linkedin.502365931.campaigns,karantoor.accounts.linkedin.500043833.campaigns,karantoor.accounts.linkedin.500082547.campaigns,karantoor.accounts.twitter.18ce53z7hjq.campaigns,karantoor.accounts.twitter.18ce53y6or0.campaigns,karantoor.accounts.twitter.18ce53waavf.campaigns/summary/")
 
-       staging-uri     "https://adstage-staging-metrics-v3.herokuapp.com:443/"
-       dev-uri         "http://localhost:5002/"
-       staging-headers {"Authorization" "Basic bWV0cmljczptZXRyaWNzLnBhc3N3b3Jk"}
-       dev-headers     {"Authorization" "Basic YWQ6c3RhZ2U="}]
-   (set-system-attrs! :done-loading? false)
+(defn query-meat [limit offset sort-by]
+  (str "?&limit=" limit "&group_limit=5&cljs=true&offset=" offset "&sort_by=" sort-by "&order=asc&filters=%5B%7B%22op%22%3A%22iin%22%2C%22path%22%3A%22meta%2Fstatus%22%2C%22value%22%3A%5B%22active%22%2C%22ad_group_inactive%22%2C%22campaign_inactive%22%2C%22completed%22%2C%22empty%22%2C%22inactive%22%2C%22not_empty%22%5D%7D%5D"))
+
+(defn fetch-data []
+  (set-system-attrs! :done-loading? false)
+  (let [date-range             (or (system-attr @conn :date-range)
+                                   "2015-10-05..2015-10-11")
+
+        [limit offset sort-by] (system-attr @conn :limit :offset :sort-by)
+        query-suffix           (query-meat (or limit 30)
+                                           (or offset 0)
+                                           (or sort-by "clicks"))
+        query                  (str query-prefix date-range query-suffix)
+
+        staging-uri            "https://adstage-staging-metrics-v3.herokuapp.com:443/"
+        staging-headers        {"Authorization" "Basic bWV0cmljczptZXRyaWNzLnBhc3N3b3Jk"}]
    (GET (str staging-uri query)
         {:headers staging-headers
-         :handler #(set-system-attrs! :totals (:totals %)
-                                      :rows (:rows %)
+         :handler #(set-system-attrs! :totals        (:totals %)
+                                      :rows          (:rows %)
                                       :done-loading? true)})))
+
+(defonce load (fetch-data))
 
 (def keys->name {:social_percentage      "Social"
                  :account_currency_code  "Currency"
@@ -144,19 +153,12 @@
   (let [menu-items (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
     (mui/drop-down-menu {:style {:width "100%" } :menuItems menu-items})))
 
-(defn sort-rows-by [index]
-  (let [new-rows (sort-by #(% index)
-                          (all-rows))]
-    (inspect (all-rows))
-    (inspect new-rows)
-    ;(set-system-attrs! :rows new-rows)
-    ))
-
 (defcs sort-by-dropdown [state]
   (let [sub-map    (select-keys keys->name (into [] (allowed-columns)))
         menu-items (mapv (fn [[k v]] {:payload k :text v}) sub-map)]
     (mui/drop-down-menu {:style {:width "100%" }
-                         :onChange #(sort-rows-by %2)
+                         :onChange #(and (set-system-attrs! :sort-by (.-payload %3))
+                                         (fetch-data))
                          :menuItems menu-items})))
 
 (def paging-sizes [10 25 50 100])
@@ -255,33 +257,28 @@
           [:div.col.span_1_of_5
            (mui/text-field {:hintText          "Ex: Campaign Name"
                             :floatingLabelText "Search"
-                            :style {:width "100%" :position "relative" :bottom "17px"} })]
+                            :style {:width "100%" :position "relative" :bottom "17px"}})]
           [:div.col.span_1_of_5]
 
-          [:div.col.span_1_of_8 {:style {:position "relative" :top "10px" :float "right"} }
+          [:div.col.span_1_of_8 {:style {:position "relative" :top "10px" :float "right"}}
             (mui/raised-button
              {:label "Columns"
               :onClick #(.show (.. this -refs -selectColumnsModal))
-              :style {:width "100%" :float "right"} })
+              :style {:width "100%" :float "right"}})
 
             (mui/dialog {:title   "Selected Columns"
                          :autoDetectWindowHeight true
                          :autoScrollBodyContent true
                          :ref     "selectColumnsModal"}
-                        (selected-column-list)
-                        )
-           ]
+                        (selected-column-list))]
 
           [:div.col.span_1_of_5 {:style {:float "right"} }
-            (sort-by-dropdown)
-            ]
-           ]
-
+            (sort-by-dropdown)]]
 
          [:div.section.group
           (if (system-attr @conn :done-loading?)
             (metrics-table nil)
-            [:div
+            [:div.center.progress-indicator
              (mui/circular-progress {:mode "indeterminate"})
              (mui/circular-progress {:mode "indeterminate"})
              (mui/circular-progress {:mode "indeterminate"})])
