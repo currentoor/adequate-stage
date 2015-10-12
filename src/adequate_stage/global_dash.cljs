@@ -5,7 +5,9 @@
    [adequate-stage.storage :as store :refer [conn set-system-attrs! system-attr]]
    [adequate-stage.metrics :as met]
    [ajax.core :refer [GET POST]]
-   [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]))
+   [rum.core :as rum :refer-macros [defc defcs defcc] :include-macros true]
+   [goog.string :as gstring]
+   [goog.string.format :as gformat]))
 
 (def query-prefix "collections/karantoor.accounts.facebook.100540310128849.campaigns,karantoor.accounts.facebook.473126772864672.campaigns,karantoor.accounts.linkedin.228929389.campaigns,karantoor.accounts.linkedin.502260647.campaigns,karantoor.accounts.linkedin.502260795.campaigns,karantoor.accounts.linkedin.502307123.campaigns,karantoor.accounts.linkedin.502365931.campaigns,karantoor.accounts.linkedin.500043833.campaigns,karantoor.accounts.linkedin.500082547.campaigns,karantoor.accounts.twitter.18ce53z7hjq.campaigns,karantoor.accounts.twitter.18ce53y6or0.campaigns,karantoor.accounts.twitter.18ce53waavf.campaigns/summary/")
 
@@ -258,6 +260,20 @@
          vec)]
     res))
 
+(defn on-date-change [part event date]
+  (let [year (.getFullYear date)
+        month (gstring/format "%02d" (.getMonth date))
+        date (gstring/format "%02d" (.getDate date))
+        formatted (str year "-" date "-" month)
+        ]
+    (inspect formatted)
+    (if (= part "start")
+      (set-system-attrs! :start-date formatted)
+      (set-system-attrs! :end-date formatted)
+      )
+    )
+  )
+
 (defcs global-dash [state db]
   (let [this (:rum/react-component state)]
     [:div
@@ -272,11 +288,17 @@
             [:div.col.span_1_of_2
               (mui/date-picker
                {:hintText "Start"
+                :autoOk true
+                :onChange (partial on-date-change "start")
+                :defaultDate (new js/Date. 2015 9 5)
                 :showYearSelector true
                 :textFieldStyle {:width "100%"}})]
              [:div.col.span_1_of_2
               (mui/date-picker
                {:hintText "End"
+                :autoOk true
+                :onChange (partial on-date-change "end")
+                :defaultDate (new js/Date. 2015 9 12)
                 :textFieldStyle {:width "100%"}})]]]
 
          [:div.section.group
