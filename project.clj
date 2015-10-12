@@ -39,6 +39,7 @@
               :source-paths ["src"]
               :compiler {:output-to "resources/public/js/compiled/adequate_stage.js"
                          :main adequate-stage.core
+                         :externs ["externs/react.js"]
                          :optimizations :advanced
                          :pretty-print false}}]}
 

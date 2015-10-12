@@ -206,6 +206,7 @@
                          :selectedIndex selectedIndex
                          :autoWidth     false
                          :onChange #(and (set-system-attrs! :limit (.-payload %3))
+                                         (not (js/console.log (.-payload %3)))
                                          (fetch-data))
                          :menuItems     menuItems})))
 
@@ -281,8 +282,6 @@
 (defcs global-dash [state db]
   (let [this (:rum/react-component state)]
     [:div
-     [:h1 "Welcome to AdequateStage!"]
-
      [:div.section.group
       [:div.col.span_1_of_12]
         [:div.col.span_10_of_12
@@ -317,7 +316,8 @@
           [:div.col.span_1_of_8 {:style {:position "relative" :top "10px" :float "right"}}
             (mui/raised-button
              {:label "Columns"
-              :onClick #(.show (.. this -refs -selectColumnsModal))
+              :onClick (fn []
+                         (.show (.. this -refs -selectColumnsModal)))
               :style {:width "100%" :float "right"}})
 
             (mui/dialog {:title   "Selected Columns"
@@ -344,7 +344,9 @@
            (paging db)
            ]
           ]
-         ]]]
+         ]
+      ]
+     ]
     )
   )
 
