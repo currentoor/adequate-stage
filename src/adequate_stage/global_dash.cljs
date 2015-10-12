@@ -200,7 +200,7 @@
 (defcs paging-dropdown [state page-size]
   (let [menuItems (mapv (fn [v1] {:payload v1 :text v1}) paging-sizes)
         selectedIndex (.indexOf (to-array paging-sizes) page-size)]
-    (mui/drop-down-menu {:style         {:width "100%" }
+    (mui/drop-down-menu {:style         {:width "90px" :position "relative" :bottom "5px" }
                          :selectedIndex selectedIndex
                          :autoWidth     false
                          :menuItems     menuItems})))
@@ -208,15 +208,15 @@
 (defcs paging [state db]
   (let [page-number (or (system-attr db :page-number) 1)
         page-size (or (system-attr db :page-size) 50)]
-    [:div
-      [:div.col {:style {:margin-right "10px"}}
+    [:div {:style {:font-size "12px"}}
+      [:div.col {:style {:margin-right "15px"}}
        [:div {:style {:display "inline" :position "relative" :top "5px" :margin-right "10px"}}
         "GO TO PAGE:"]
-       (mui/text-field {:style        {:width "35px"}
+       (mui/text-field {:style        {:width "35px" :position "relative" :top "3px"}
                         :defaultValue page-number})
        ]
       [:div.col
-       [:div {:style {:display "inline" :position "relative" :bottom "10px"}}
+       [:div {:style {:display "inline" :position "relative" :bottom "15px"}}
         "NUMBER OF ROWS:"]
        (paging-dropdown page-size)]
       [:div.col
@@ -339,8 +339,8 @@
           [:div.col.span_1_of_10]]
 
          [:div.section.group
-          [:div.col.span_2_of_5]
-          [:div.col.span_3_of_5
+          [:div.col.span_1_of_4]
+          [:div.col.span_1_of_2
            (paging db)
            ]
           ]
