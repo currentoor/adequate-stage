@@ -12,6 +12,38 @@
 (defn query-meat [limit offset sort-by]
   (str "?&limit=" limit "&group_limit=5&cljs=true&offset=" offset "&sort_by=" sort-by "&order=asc&filters=%5B%7B%22op%22%3A%22iin%22%2C%22path%22%3A%22meta%2Fstatus%22%2C%22value%22%3A%5B%22active%22%2C%22ad_group_inactive%22%2C%22campaign_inactive%22%2C%22completed%22%2C%22empty%22%2C%22inactive%22%2C%22not_empty%22%5D%7D%5D"))
 
+(def empty-totals
+  {:account_currency_code  ""
+   :account_name           ""
+   :account_status         ""
+   :account_time_zone      ""
+   :account_uri            ""
+   :campaign_is_draft      ""
+   :campaign_name          ""
+   :campaign_status        ""
+   :campaign_type          ""
+   :campaign_uri           ""
+   :currency_code          ""
+   :field_mappings         ""
+   :folder_id              ""
+   :folder_name            ""
+   :full_remote_account_id ""
+   :name                   ""
+   :network                ""
+   :remote_account_id      ""
+   :remote_campaign_id     ""
+   :status                 ""
+   :type                   ""})
+
+(defn hydrate-totals [totals]
+  (into empty-totals totals))
+
+(let [total-keys (-> (system-attr @conn :totals) keys sort)
+      all-keys (-> (system-attr @conn :rows) first keys sort)]
+  (inspect total-keys)
+  (inspect all-keys)
+  )
+
 (defn fetch-data []
   (set-system-attrs! :done-loading? false)
   (let [date-range             (or (system-attr @conn :date-range)
@@ -27,7 +59,7 @@
         staging-headers        {"Authorization" "Basic bWV0cmljczptZXRyaWNzLnBhc3N3b3Jk"}]
    (GET (str staging-uri query)
         {:headers staging-headers
-         :handler #(set-system-attrs! :totals        (:totals %)
+         :handler #(set-system-attrs! :totals        (hydrate-totals (:totals %))
                                       :rows          (:rows %)
                                       :done-loading? true)})))
 
