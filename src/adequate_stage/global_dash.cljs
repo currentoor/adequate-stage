@@ -202,7 +202,7 @@
     ]
   ))
 
-(def paging-sizes [30 50 100 500 1000])
+(def paging-sizes [10 50 100 500 1000])
 
 (defcs paging-dropdown [state page-size]
   (let [menuItems (mapv (fn [v1] {:payload v1 :text v1}) paging-sizes)
