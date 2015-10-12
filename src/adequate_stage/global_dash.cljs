@@ -40,16 +40,18 @@
 (defn hydrate-totals [totals]
   (into empty-totals totals))
 
-(let [total-keys (-> (system-attr @conn :totals) keys sort)
-      all-keys (-> (system-attr @conn :rows) first keys sort)]
-  (inspect total-keys)
-  (inspect all-keys)
-  )
+(set-system-attrs! :start-date "2015-10-05"
+                   :end-date   "2015-10-12")
+
+(defn date-range []
+  (let [[start end] (system-attr @conn :start-date :end-date)]
+    (if (and start end)
+      (str start ".." end))))
 
 (defn fetch-data []
   (set-system-attrs! :done-loading? false)
-  (let [date-range             (or (system-attr @conn :date-range)
-                                   "2015-10-05..2015-10-11")
+  (let [date-range             (or (date-range)
+                                   "2015-10-05..2015-10-12")
 
         [limit offset sort-by] (system-attr @conn :limit :offset :sort-by)
         query-suffix           (query-meat (or limit 30)
@@ -195,7 +197,7 @@
                                          (fetch-data))
                          :menuItems menu-items})))
 
-(def paging-sizes [10 25 50 100])
+(def paging-sizes [30 50 100 500 1000])
 
 (defcs paging-dropdown [state page-size]
   (let [menuItems (mapv (fn [v1] {:payload v1 :text v1}) paging-sizes)
@@ -203,11 +205,13 @@
     (mui/drop-down-menu {:style         {:width "90px" :position "relative" :bottom "5px" }
                          :selectedIndex selectedIndex
                          :autoWidth     false
+                         :onChange #(and (set-system-attrs! :limit (.-payload %3))
+                                         (fetch-data))
                          :menuItems     menuItems})))
 
 (defcs paging [state db]
   (let [page-number (or (system-attr db :page-number) 1)
-        page-size (or (system-attr db :page-size) 50)]
+        page-size (or (system-attr db :limit) 50)]
     [:div {:style {:font-size "12px"}}
       [:div.col {:style {:margin-right "15px"}}
        [:div {:style {:display "inline" :position "relative" :top "5px" :margin-right "10px"}}
@@ -265,18 +269,14 @@
     res))
 
 (defn on-date-change [part event date]
-  (let [year (.getFullYear date)
-        month (gstring/format "%02d" (.getMonth date))
-        date (gstring/format "%02d" (.getDate date))
-        formatted (str year "-" date "-" month)
-        ]
-    (inspect formatted)
+  (let [year      (.getFullYear date)
+        month     (gstring/format "%02d" (inc (.getMonth date)))
+        date      (gstring/format "%02d" (.getDate date))
+        formatted (str year "-" month "-" date)]
     (if (= part "start")
       (set-system-attrs! :start-date formatted)
-      (set-system-attrs! :end-date formatted)
-      )
-    )
-  )
+      (set-system-attrs! :end-date formatted))
+    (fetch-data)))
 
 (defcs global-dash [state db]
   (let [this (:rum/react-component state)]
