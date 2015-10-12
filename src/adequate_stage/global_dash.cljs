@@ -38,12 +38,6 @@
 (defn hydrate-totals [totals]
   (into empty-totals totals))
 
-(let [total-keys (-> (system-attr @conn :totals) keys sort)
-      all-keys (-> (system-attr @conn :rows) first keys sort)]
-  (inspect total-keys)
-  (inspect all-keys)
-  )
-
 (defn fetch-data []
   (set-system-attrs! :done-loading? false)
   (let [date-range             (or (system-attr @conn :date-range)
@@ -193,7 +187,7 @@
                                          (fetch-data))
                          :menuItems menu-items})))
 
-(def paging-sizes [10 25 50 100])
+(def paging-sizes [30 50 100 200])
 
 (defcs paging-dropdown [state page-size]
   (let [menuItems (mapv (fn [v1] {:payload v1 :text v1}) paging-sizes)
@@ -201,11 +195,13 @@
     (mui/drop-down-menu {:style         {:width "100%" }
                          :selectedIndex selectedIndex
                          :autoWidth     false
+                         :onChange #(and (set-system-attrs! :limit (.-payload %3))
+                                         (fetch-data))
                          :menuItems     menuItems})))
 
 (defcs paging [state db]
   (let [page-number (or (system-attr db :page-number) 1)
-        page-size (or (system-attr db :page-size) 50)]
+        page-size (or (system-attr db :limit) 50)]
     [:div
       [:div.col {:style {:margin-right "10px"}}
        [:div {:style {:display "inline" :position "relative" :top "5px" :margin-right "10px"}}
