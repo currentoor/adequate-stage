@@ -18,13 +18,11 @@
        staging-headers {"Authorization" "Basic bWV0cmljczptZXRyaWNzLnBhc3N3b3Jk"}
        dev-headers     {"Authorization" "Basic YWQ6c3RhZ2U="}]
    (set-system-attrs! :done-loading? false)
-   (GET (str dev-uri query)
-        {:headers dev-headers
-         :handler #(inspect (and (set-system-attrs! :totals (:totals %))
-                                 (set-system-attrs! :rows (:rows %))
-                                 (set-system-attrs! :done-loading? true)
-                                 ))
-         })))
+   (GET (str staging-uri query)
+        {:headers staging-headers
+         :handler #(set-system-attrs! :totals (:totals %)
+                                      :rows (:rows %)
+                                      :done-loading? true)})))
 
 (def keys->name {:social_percentage      "Social"
                  :account_currency_code  "Currency"
@@ -70,8 +68,7 @@
      :spend
      :network
      :cpm
-     :cpa
-     }))
+     :cpa}))
 
 (defn in?
   "true if seq contains elm"
@@ -144,8 +141,23 @@
         (data->table-row (all-totals)))))))
 
 (defcs filter-dropdown [state]
-  (let [menuItems (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
-    (mui/drop-down-menu {:style {:width "100%" } :menuItems menuItems})))
+  (let [menu-items (mapv (fn [v1 v2] {:payload v1 :text v2}) (:values filters) (:texts filters))]
+    (mui/drop-down-menu {:style {:width "100%" } :menuItems menu-items})))
+
+(defn sort-rows-by [index]
+  (let [new-rows (sort-by #(% index)
+                          (all-rows))]
+    (inspect (all-rows))
+    (inspect new-rows)
+    ;(set-system-attrs! :rows new-rows)
+    ))
+
+(defcs sort-by-dropdown [state]
+  (let [sub-map    (select-keys keys->name (into [] (allowed-columns)))
+        menu-items (mapv (fn [[k v]] {:payload k :text v}) sub-map)]
+    (mui/drop-down-menu {:style {:width "100%" }
+                         :onChange #(sort-rows-by %2)
+                         :menuItems menu-items})))
 
 (def paging-sizes [10 25 50 100])
 
@@ -182,8 +194,8 @@
        [:div {:style {:position "relative" :bottom "5px" :display "inline" }} "1-10 of 10"]
        (mui/icon-button
         {:iconClassName   "material-icons"
-         :tooltipPosition "top-right"
-         :tooltip         "Previous Page"
+         :tooltipPosition "top-left"
+         :tooltip         "Next Page"
          ;;:onClick         prev
          }
         "arrow_forward")
@@ -215,8 +227,6 @@
          (cons :div)
          vec)]
     res))
-
-(inspect (toggle-in-set #{:a :b} :a))
 
 (defcs global-dash [state db]
   (let [this (:rum/react-component state)]
@@ -263,8 +273,7 @@
            ]
 
           [:div.col.span_1_of_5 {:style {:float "right"} }
-            (mui/drop-down-menu {:menuItems [{:payload 1 :text "foo"}]
-                                 :style {:width "100%" }})
+            (sort-by-dropdown)
             ]
            ]
 
